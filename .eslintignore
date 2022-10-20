@@ -1,0 +1,4 @@
+src/registerServiceWorker.js
+build/*
+flow-typed/*
+coverage
