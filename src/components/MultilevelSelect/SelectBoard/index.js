@@ -2,9 +2,11 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
 import cloneDeep from 'lodash/cloneDeep';
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { Button, Input, Spin } from 'antd';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { Button, Input, Spin, Form } from 'antd';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+
+import { useConfig } from 'contexts/config';
 
 const Wrap = styled.section`
   display: grid;
@@ -77,6 +79,8 @@ const mockOptions = [
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function SelectBoard({ node, apiFn }) {
+  const [form] = Form.useForm();
+  const { config } = useConfig();
   const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -101,22 +105,22 @@ function SelectBoard({ node, apiFn }) {
   );
 
   const onSave = () => {
-    // TODO: handle add type to single items
     const produce = cloneDeep(node);
-    produce.children = selectedOptions;
+    const optionType = config?.levels?.[node.type]?.nextLevel;
+    produce.children = selectedOptions.map(opt => ({
+      ...opt,
+      type: optionType,
+    }));
 
     console.log(produce);
   };
 
-  const handleOnChange = useCallback(
-    async event => {
-      const { value } = event.target;
-      loadOptions({ search: value });
-    },
+  const debounceSearch = useMemo(
+    () => debounce(e => loadOptions({ search: e.target.value }), 300),
     [loadOptions]
   );
 
-  const onInputChange = useCallback(debounce(handleOnChange, 300), []);
+  const onInputChange = useCallback(debounceSearch, [debounceSearch]);
 
   const onClickAdd = option => () => {
     // add
@@ -151,7 +155,8 @@ function SelectBoard({ node, apiFn }) {
   useEffect(() => {
     setSelectedOptions(node?.children || []);
     loadOptions({ search: '' });
-  }, [loadOptions, node]);
+    form.resetFields();
+  }, [form, loadOptions, node]);
 
   if (!node) return null;
 
@@ -164,7 +169,16 @@ function SelectBoard({ node, apiFn }) {
       </Actions>
 
       <Control>
-        <Input placeholder="Search ..." size="large" onChange={onInputChange} />
+        <Form
+          form={form}
+          initialValues={{
+            searchTerm: '',
+          }}
+        >
+          <Form.Item name="searchTerm" noStyle>
+            <Input placeholder="Search ..." size="large" onChange={onInputChange} />
+          </Form.Item>
+        </Form>
 
         <WrapOptions>
           <Spin spinning={isLoading}>
