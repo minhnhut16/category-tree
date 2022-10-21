@@ -48,7 +48,6 @@ const Option = styled.div`
 
   .anticon {
     flex: 0;
-    flex-basis: 40px;
     line-height: 40px;
   }
 `;
@@ -90,6 +89,7 @@ function SelectBoard({ node, apiFn }) {
         // TODO: handle with real api
         await apiFn(body);
         await sleep(300);
+        // remove options had been select
         setOptions(mockOptions.filter(opt => !selectedIds.current.has(opt.code)));
       } catch (err) {
         console.error(err);
@@ -104,6 +104,8 @@ function SelectBoard({ node, apiFn }) {
     // TODO: handle add type to single items
     const produce = cloneDeep(node);
     produce.children = selectedOptions;
+
+    console.log(produce);
   };
 
   const handleOnChange = useCallback(
@@ -171,7 +173,7 @@ function SelectBoard({ node, apiFn }) {
                 <Option key={option.code} onClick={onClickAdd(option)}>
                   <p>{option.name}</p>
 
-                  <MinusCircleOutlined />
+                  <PlusCircleOutlined />
                 </Option>
               ))}
           </Spin>
@@ -183,7 +185,7 @@ function SelectBoard({ node, apiFn }) {
           <Option key={item.id} onClick={onClickRemove(item)}>
             <p>{item.name}</p>
 
-            <PlusCircleOutlined />
+            <MinusCircleOutlined />
           </Option>
         ))}
       </Selection>
