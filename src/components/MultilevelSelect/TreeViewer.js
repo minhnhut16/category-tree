@@ -18,8 +18,9 @@ const TreeViewer = ({ tree, CustomNode, onToggle, onChange, activeNode }) => {
           onChange={() => node.id !== activeNode?.id && onChange && onChange(node)}
           isActiveNode={activeNode?.id === node.id}
         >
-          {isArray(node?.children) &&
-            node.children.map(childNode => renderTree(childNode, level + 1))}
+          {isArray(node?.children)
+            ? node.children.map(childNode => renderTree(childNode, level + 1))
+            : null}
         </Node>
       );
     },
