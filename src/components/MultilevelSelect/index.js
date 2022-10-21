@@ -4,6 +4,7 @@ import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 
 import TreeViewer from './TreeViewer';
+import SelectBoard from './SelectBoard';
 
 const Wrapper = styled(Row).attrs(props => ({
   gutter: [8, 8],
@@ -21,6 +22,7 @@ const TreeWrapper = styled(Col).attrs(props => ({
 
 const MultilevelSelect = ({ treeData }) => {
   const [activeNode, setActiveNode] = useState({});
+  const fakeApi = () => {};
 
   const handleChange = useCallback(node => {
     setActiveNode(node);
@@ -32,8 +34,7 @@ const MultilevelSelect = ({ treeData }) => {
         <TreeViewer treeData={treeData} onChange={handleChange} />
       </TreeWrapper>
 
-      {/* // An nguyen section */}
-      <div>Select</div>
+      <Col span={14}>{activeNode && <SelectBoard node={activeNode} apiFn={fakeApi} />}</Col>
     </Wrapper>
   );
 };
