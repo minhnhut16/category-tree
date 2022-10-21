@@ -43,7 +43,7 @@ function formatTree(tree) {
 const CategoryViewer = ({ initialTree }) => {
   const [tree, setTree] = useState({});
   // use activeNodeData for select section @an nguyen
-  const [activeNodeData, setActiveNode] = useState({});
+  const [activeNode, setActiveNode] = useState({});
 
   const handleToggle = useCallback(
     id => {
@@ -78,7 +78,7 @@ const CategoryViewer = ({ initialTree }) => {
           tree={tree}
           onToggle={handleToggle}
           onChange={handleChange}
-          activeNodeData={activeNodeData}
+          activeNode={activeNode}
         />
       </TreeWrapper>
 
