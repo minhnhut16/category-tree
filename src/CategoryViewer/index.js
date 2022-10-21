@@ -25,18 +25,18 @@ const TreeWrapper = styled(Col).attrs(props => ({
 function formatTree(tree) {
   const formatedTree = cloneDeep(tree);
 
-  function travel(node) {
+  function traversal(node) {
     if (!node.id) {
       throw new Error('some node is missing id');
     }
     node.isExpanded = true;
 
     if (isArray(node.children)) {
-      node.children.forEach(childNode => travel(childNode));
+      node.children.forEach(childNode => traversal(childNode));
     }
   }
 
-  travel(formatedTree);
+  traversal(formatedTree);
   return formatedTree;
 }
 
@@ -48,14 +48,14 @@ const CategoryViewer = ({ initialTree }) => {
   const handleToggle = useCallback(
     id => {
       const clonedTree = cloneDeep(tree);
-      function travel(node) {
+      function traversal(node) {
         if (node.id === id) node.isExpanded = !node.isExpanded;
 
         if (isArray(node.children)) {
-          node.children.forEach(childNode => travel(childNode));
+          node.children.forEach(childNode => traversal(childNode));
         }
       }
-      travel(clonedTree);
+      traversal(clonedTree);
       setTree(clonedTree);
     },
     [tree]
