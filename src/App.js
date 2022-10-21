@@ -1,6 +1,9 @@
+import { Button, Modal } from 'antd';
 import 'antd/dist/antd.css';
-import CategoryViewer from 'components/CategoryViewer';
+import MultilevelSelect from 'components/MultilevelSelect';
 import Spacing from 'components/Spacing';
+import { MultilevelSelectProvider } from 'contexts/multilevelSelect';
+import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 const exampleData = {
@@ -73,10 +76,26 @@ const exampleData = {
 };
 
 function App() {
+  const [openSelect, setOpenSelect] = useState(false);
+
   return (
     <Spacing px="1rem" py="1rem">
       <div className="App">
-        <CategoryViewer initialTree={exampleData} />
+        <Button type="primary" onClick={() => setOpenSelect(true)}>
+          Open Select
+        </Button>
+
+        <Modal
+          open={openSelect}
+          onCancel={() => setOpenSelect(false)}
+          footer={null}
+          width="100%"
+          title="Multilevel select"
+        >
+          <MultilevelSelectProvider>
+            <MultilevelSelect treeData={exampleData} />
+          </MultilevelSelectProvider>
+        </Modal>
       </div>
     </Spacing>
   );

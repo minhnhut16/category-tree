@@ -40,7 +40,7 @@ function formatTree(tree) {
   return formatedTree;
 }
 
-const CategoryViewer = ({ initialTree }) => {
+const MultilevelSelect = ({ treeData }) => {
   const [tree, setTree] = useState({});
   // use activeNodeData for select section @an nguyen
   const [activeNode, setActiveNode] = useState({});
@@ -66,10 +66,10 @@ const CategoryViewer = ({ initialTree }) => {
   }, []);
 
   useEffect(() => {
-    if (initialTree) {
-      setTree(formatTree(initialTree));
+    if (treeData) {
+      setTree(formatTree(treeData));
     }
-  }, [initialTree]);
+  }, [treeData]);
 
   return (
     <Wrapper>
@@ -88,12 +88,12 @@ const CategoryViewer = ({ initialTree }) => {
   );
 };
 
-CategoryViewer.propTypes = {
-  initialTree: PropTypes.shape({}),
+MultilevelSelect.propTypes = {
+  treeData: PropTypes.shape({}),
 };
 
-CategoryViewer.defaultProps = {
-  initialTree: null,
+MultilevelSelect.defaultProps = {
+  treeData: null,
 };
 
-export default CategoryViewer;
+export default MultilevelSelect;
