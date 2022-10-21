@@ -2,7 +2,7 @@ import { Button, Modal } from 'antd';
 import 'antd/dist/antd.css';
 import MultilevelSelect from 'components/MultilevelSelect';
 import Spacing from 'components/Spacing';
-import { MultilevelSelectProvider } from 'contexts/multilevelSelect';
+import { ConfigProvider } from 'contexts/config';
 import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
@@ -92,9 +92,9 @@ function App() {
           width="100%"
           title="Multilevel select"
         >
-          <MultilevelSelectProvider>
+          <ConfigProvider>
             <MultilevelSelect treeData={exampleData} />
-          </MultilevelSelectProvider>
+          </ConfigProvider>
         </Modal>
       </div>
     </Spacing>

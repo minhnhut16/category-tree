@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { createContext, useContext } from 'react';
 
-const MultilevelSelectContext = createContext();
+const ConfigContext = createContext();
 
 const TYPES = {
   ROOT: 'root',
@@ -29,15 +29,11 @@ const config = {
   },
 };
 
-export const MultilevelSelectProvider = ({ children }) => {
-  return (
-    <MultilevelSelectContext.Provider value={{ TYPES, config }}>
-      {children}
-    </MultilevelSelectContext.Provider>
-  );
+export const ConfigProvider = ({ children }) => {
+  return <ConfigContext.Provider value={{ TYPES, config }}>{children}</ConfigContext.Provider>;
 };
 
-export const useMultilevelSelect = () => {
-  const value = useContext(MultilevelSelectContext);
+export const useConfig = () => {
+  const value = useContext(ConfigContext);
   return value;
 };
