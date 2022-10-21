@@ -1,12 +1,15 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
+import cloneDeep from 'lodash/cloneDeep';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Input, Spin } from 'antd';
+import { Button, Input, Spin } from 'antd';
+import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 const Wrap = styled.section`
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 40px 1fr;
   grid-gap: 20px;
   height: 100%;
 `;
@@ -29,6 +32,31 @@ const Option = styled.div`
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
+  display: flex;
+  padding: 4px 11px;
+  border: 1px solid #fff;
+
+  &:hover {
+    color: blue;
+    border-color: #d9d9d9;
+  }
+
+  p {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .anticon {
+    flex: 0;
+    flex-basis: 40px;
+    line-height: 40px;
+  }
+`;
+
+const Actions = styled.div`
+  grid-column: 1 / -1;
+  align-self: center;
+  justify-self: end;
 `;
 
 const mockOptions = [
@@ -71,6 +99,12 @@ function SelectBoard({ node, apiFn }) {
     },
     [apiFn]
   );
+
+  const onSave = () => {
+    // TODO: handle add type to single items
+    const produce = cloneDeep(node);
+    produce.children = selectedOptions;
+  };
 
   const handleOnChange = useCallback(
     async event => {
@@ -121,15 +155,23 @@ function SelectBoard({ node, apiFn }) {
 
   return (
     <Wrap>
+      <Actions>
+        <Button type="primary" onClick={onSave}>
+          Save
+        </Button>
+      </Actions>
+
       <Control>
-        <Input placeholder="Search ..." onChange={onInputChange} />
+        <Input placeholder="Search ..." size="large" onChange={onInputChange} />
 
         <WrapOptions>
           <Spin spinning={isLoading}>
             {options?.length > 0 &&
               options.map(option => (
                 <Option key={option.code} onClick={onClickAdd(option)}>
-                  {option.name}
+                  <p>{option.name}</p>
+
+                  <MinusCircleOutlined />
                 </Option>
               ))}
           </Spin>
@@ -139,7 +181,9 @@ function SelectBoard({ node, apiFn }) {
       <Selection>
         {selectedOptions.map(item => (
           <Option key={item.id} onClick={onClickRemove(item)}>
-            {item.name}
+            <p>{item.name}</p>
+
+            <PlusCircleOutlined />
           </Option>
         ))}
       </Selection>
