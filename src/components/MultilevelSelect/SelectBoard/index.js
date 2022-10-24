@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
 import cloneDeep from 'lodash/cloneDeep';
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { Button, Input, Spin, Form } from 'antd';
+import { Button, Input, Spin, Form, Divider } from 'antd';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 import { useConfig } from 'contexts/config';
+import Spacing from 'components/Spacing';
 
 const Wrap = styled.section`
   display: grid;
@@ -17,30 +18,31 @@ const Wrap = styled.section`
 `;
 
 const Control = styled.div`
-  padding: 10px;
-  border: 1px solid #000;
+  border: 1px solid #bfbfbf;
+  border-radius: 2px;
 `;
 
 const Selection = styled.div`
   padding: 10px;
-  border: 1px solid #000;
+  border: 1px solid #bfbfbf;
+  border-radius: 2px;
 `;
 
 const WrapOptions = styled.div`
-  padding-top: 10px;
+  padding: 0 10px 10px;
 `;
 
 const Option = styled.div`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   padding: 4px 11px;
   border: 1px solid #fff;
+  border-radius: 2px;
 
   &:hover {
-    color: blue;
-    border-color: #d9d9d9;
+    border-color: #bfbfbf;
   }
 
   p {
@@ -50,7 +52,17 @@ const Option = styled.div`
 
   .anticon {
     flex: 0;
-    line-height: 40px;
+    line-height: 30px;
+
+    // add-icon
+    &.anticon-plus-circle {
+      color: #40a9ff;
+    }
+
+    // remove-icon
+    &.anticon-minus-circle {
+      color: #c41d7f;
+    }
   }
 `;
 
@@ -58,6 +70,13 @@ const Actions = styled.div`
   grid-column: 1 / -1;
   align-self: center;
   justify-self: end;
+`;
+
+const Title = styled.p`
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  margin: 0;
 `;
 
 const mockOptions = [
@@ -84,7 +103,6 @@ function SelectBoard({ node, apiFn }) {
   const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const selectedIds = useRef(new Set());
 
   const loadOptions = useCallback(
     async body => {
@@ -93,8 +111,7 @@ function SelectBoard({ node, apiFn }) {
         // TODO: handle with real api
         await apiFn(body);
         await sleep(300);
-        // remove options had been select
-        setOptions(mockOptions.filter(opt => !selectedIds.current.has(opt.code)));
+        setOptions(mockOptions);
       } catch (err) {
         console.error(err);
       } finally {
@@ -138,19 +155,37 @@ function SelectBoard({ node, apiFn }) {
   const onClickRemove = option => () => {
     setSelectedOptions(prevOptions => prevOptions.filter(opt => opt.id !== option.id));
     // add into list
-    setOptions(pevOptions => [
-      {
-        name: option.name,
-        code: option.id,
-      },
-      ...pevOptions,
-    ]);
+    setOptions(pevOptions => {
+      const hadOption = pevOptions.find(opt => opt.code === option.id);
+
+      if (hadOption) return pevOptions;
+      return [
+        {
+          code: option.id,
+          name: option.name,
+        },
+        ...pevOptions,
+      ];
+    });
   };
 
-  useEffect(() => {
-    selectedIds.current.clear();
-    selectedOptions.map(opt => selectedIds.current.add(opt.id));
-  }, [selectedOptions]);
+  const renderOptions = () => {
+    if (!options?.length) return null;
+    const selectedIds = new Set();
+    selectedOptions.map(opt => selectedIds.add(opt.id));
+
+    return options.map(option => {
+      if (selectedIds.has(option.code)) return null;
+
+      return (
+        <Option key={option.code} onClick={onClickAdd(option)}>
+          <p>{option.name}</p>
+
+          <PlusCircleOutlined />
+        </Option>
+      );
+    });
+  };
 
   useEffect(() => {
     setSelectedOptions(node?.children || []);
@@ -169,32 +204,34 @@ function SelectBoard({ node, apiFn }) {
       </Actions>
 
       <Control>
-        <Form
-          form={form}
-          initialValues={{
-            searchTerm: '',
-          }}
-        >
-          <Form.Item name="searchTerm" noStyle>
-            <Input placeholder="Search ..." size="large" onChange={onInputChange} />
-          </Form.Item>
-        </Form>
+        <Spacing px="10px" pt="10px">
+          <div>
+            <Title>Filter</Title>
+
+            <Form
+              form={form}
+              initialValues={{
+                searchTerm: '',
+              }}
+            >
+              <Form.Item name="searchTerm" noStyle>
+                <Input placeholder="Search filter" size="large" onChange={onInputChange} />
+              </Form.Item>
+            </Form>
+          </div>
+        </Spacing>
+
+        <Spacing mt="20px" mb="16px">
+          <Divider type="horizontal" />
+        </Spacing>
 
         <WrapOptions>
-          <Spin spinning={isLoading}>
-            {options?.length > 0 &&
-              options.map(option => (
-                <Option key={option.code} onClick={onClickAdd(option)}>
-                  <p>{option.name}</p>
-
-                  <PlusCircleOutlined />
-                </Option>
-              ))}
-          </Spin>
+          <Spin spinning={isLoading}>{renderOptions()}</Spin>
         </WrapOptions>
       </Control>
 
       <Selection>
+        <Title>Selected</Title>
         {selectedOptions.map(item => (
           <Option key={item.id} onClick={onClickRemove(item)}>
             <p>{item.name}</p>
