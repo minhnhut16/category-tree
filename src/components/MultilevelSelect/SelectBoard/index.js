@@ -2,9 +2,9 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
 import cloneDeep from 'lodash/cloneDeep';
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button, Input, Spin, Form, Divider } from 'antd';
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons';
 
 import { useConfig } from 'contexts/config';
 import Spacing from 'components/Spacing';
@@ -12,20 +12,28 @@ import Spacing from 'components/Spacing';
 const Wrap = styled.section`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 40px 1fr;
-  grid-gap: 20px;
+  grid-template-rows: 55px 1fr;
+  grid-gap: 20px 25px;
   height: 100%;
+  border-radius: 4px;
+  background-color: #f8fafb;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.13);
+  padding-bottom: 20px;
 `;
 
 const Control = styled.div`
-  border: 1px solid #bfbfbf;
+  border: 1px solid #e9eff5;
   border-radius: 2px;
+  margin-left: 16px;
+  background-color: #fff;
 `;
 
 const Selection = styled.div`
   padding: 10px;
-  border: 1px solid #bfbfbf;
+  border: 1px solid #e9eff5;
   border-radius: 2px;
+  margin-right: 16px;
+  background-color: #fff;
 `;
 
 const WrapOptions = styled.div`
@@ -68,13 +76,23 @@ const Option = styled.div`
 
 const Actions = styled.div`
   grid-column: 1 / -1;
-  align-self: center;
-  justify-self: end;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  padding: 0 16px;
+`;
+
+const Heading = styled.p`
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  text-transform: capitalize;
 `;
 
 const Title = styled.p`
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   padding-bottom: 12px;
   margin: 0;
 `;
@@ -103,6 +121,8 @@ function SelectBoard({ node, apiFn }) {
   const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const nextLevel = config?.levels?.[node.type]?.nextLevel || '';
 
   const loadOptions = useCallback(
     async body => {
@@ -198,6 +218,8 @@ function SelectBoard({ node, apiFn }) {
   return (
     <Wrap>
       <Actions>
+        <Heading>Customize {nextLevel}</Heading>
+
         <Button type="primary" onClick={onSave}>
           Save
         </Button>
@@ -206,7 +228,7 @@ function SelectBoard({ node, apiFn }) {
       <Control>
         <Spacing px="10px" pt="10px">
           <div>
-            <Title>Filter</Title>
+            <Title>Filter {nextLevel}</Title>
 
             <Form
               form={form}
@@ -215,7 +237,7 @@ function SelectBoard({ node, apiFn }) {
               }}
             >
               <Form.Item name="searchTerm" noStyle>
-                <Input placeholder="Search filter" size="large" onChange={onInputChange} />
+                <Input prefix={<SearchOutlined />} size="large" onChange={onInputChange} />
               </Form.Item>
             </Form>
           </div>
