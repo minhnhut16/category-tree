@@ -2,12 +2,13 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import debounce from 'lodash/debounce';
 import cloneDeep from 'lodash/cloneDeep';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { Button, Input, Spin, Form, Divider } from 'antd';
 import { MinusCircleOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons';
 
 import { useConfig } from 'contexts/config';
 import Spacing from 'components/Spacing';
+import { reducer, ACTIONS, initialState } from './reducer';
 
 const Wrap = styled.section`
   display: grid;
@@ -118,24 +119,31 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 function SelectBoard({ node, apiFn }) {
   const [form] = Form.useForm();
   const { config } = useConfig();
-  const [isLoading, setIsLoading] = useState(false);
-  const [options, setOptions] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState([]);
+  const [{ isLoading, options, selectedOptions }, dispatch] = useReducer(reducer, initialState);
 
   const nextLevel = config?.levels?.[node.type]?.nextLevel || '';
 
   const loadOptions = useCallback(
     async body => {
       try {
-        setIsLoading(true);
+        dispatch({
+          type: ACTIONS.TOGGLE_IS_LOADING,
+          value: true,
+        });
         // TODO: handle with real api
         await apiFn(body);
         await sleep(300);
-        setOptions(mockOptions);
+        dispatch({
+          type: ACTIONS.SET_OPTIONS,
+          value: mockOptions,
+        });
       } catch (err) {
         console.error(err);
       } finally {
-        setIsLoading(false);
+        dispatch({
+          type: ACTIONS.TOGGLE_IS_LOADING,
+          value: false,
+        });
       }
     },
     [apiFn]
@@ -160,32 +168,22 @@ function SelectBoard({ node, apiFn }) {
   const onInputChange = useCallback(debounceSearch, [debounceSearch]);
 
   const onClickAdd = option => () => {
-    // add
-    setSelectedOptions(prev => [
-      {
+    dispatch({
+      type: ACTIONS.ADD_OPTION,
+      value: {
         id: option.code,
         name: option.name,
       },
-      ...prev,
-    ]);
-    // remove in list
-    setOptions(pevOptions => pevOptions.filter(opt => opt.code !== option.code));
+    });
   };
 
   const onClickRemove = option => () => {
-    setSelectedOptions(prevOptions => prevOptions.filter(opt => opt.id !== option.id));
-    // add into list
-    setOptions(pevOptions => {
-      const hadOption = pevOptions.find(opt => opt.code === option.id);
-
-      if (hadOption) return pevOptions;
-      return [
-        {
-          code: option.id,
-          name: option.name,
-        },
-        ...pevOptions,
-      ];
+    dispatch({
+      type: ACTIONS.REMOVE_OPTION,
+      value: {
+        id: option.id,
+        name: option.name,
+      },
     });
   };
 
@@ -208,7 +206,10 @@ function SelectBoard({ node, apiFn }) {
   };
 
   useEffect(() => {
-    setSelectedOptions(node?.children || []);
+    dispatch({
+      type: ACTIONS.SET_SELECTED_OPTIONS,
+      value: node?.children || [],
+    });
     loadOptions({ search: '' });
     form.resetFields();
   }, [form, loadOptions, node]);
