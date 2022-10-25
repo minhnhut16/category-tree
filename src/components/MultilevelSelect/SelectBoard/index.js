@@ -123,6 +123,7 @@ function SelectBoard({ node, apiFn }) {
 
   const nextLevel = config?.levels?.[node.type]?.nextLevel || '';
 
+  // TODO: convert to hooks in LP :)
   const loadOptions = useCallback(
     async body => {
       try {
