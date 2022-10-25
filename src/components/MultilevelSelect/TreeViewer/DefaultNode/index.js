@@ -9,6 +9,7 @@ const NodeList = styled.ul`
   list-style-type: none;
   margin: 0;
   padding-left: 1rem;
+  height: ${props => (!props.isExpanded ? '0' : 'auto')};
   transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
   overflow-y: hidden;
