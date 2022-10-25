@@ -1,7 +1,4 @@
-/* eslint-disable no-param-reassign */
 import { useCallback, useEffect, useState } from 'react';
-import isArray from 'lodash/isArray';
-import cloneDeep from 'lodash/cloneDeep';
 import styled from 'styled-components';
 import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
@@ -22,64 +19,17 @@ const TreeWrapper = styled(Col).attrs(props => ({
   ...props,
 }))``;
 
-function formatTree(tree) {
-  const formatedTree = cloneDeep(tree);
-
-  function traversal(node) {
-    if (!node.id) {
-      throw new Error('some node is missing id');
-    }
-    node.isExpanded = true;
-
-    if (isArray(node.children)) {
-      node.children.forEach(childNode => traversal(childNode));
-    }
-  }
-
-  traversal(formatedTree);
-  return formatedTree;
-}
-
 const MultilevelSelect = ({ treeData }) => {
-  const [tree, setTree] = useState({});
-  // use activeNodeData for select section @an nguyen
   const [activeNode, setActiveNode] = useState({});
-
-  const handleToggle = useCallback(
-    id => {
-      const clonedTree = cloneDeep(tree);
-      function traversal(node) {
-        if (node.id === id) node.isExpanded = !node.isExpanded;
-
-        if (isArray(node.children)) {
-          node.children.forEach(childNode => traversal(childNode));
-        }
-      }
-      traversal(clonedTree);
-      setTree(clonedTree);
-    },
-    [tree]
-  );
 
   const handleChange = useCallback(node => {
     setActiveNode(node);
   }, []);
 
-  useEffect(() => {
-    if (treeData) {
-      setTree(formatTree(treeData));
-    }
-  }, [treeData]);
-
   return (
     <Wrapper>
       <TreeWrapper>
-        <TreeViewer
-          tree={tree}
-          onToggle={handleToggle}
-          onChange={handleChange}
-          activeNode={activeNode}
-        />
+        <TreeViewer treeData={treeData} onChange={handleChange} />
       </TreeWrapper>
 
       {/* // An nguyen section */}

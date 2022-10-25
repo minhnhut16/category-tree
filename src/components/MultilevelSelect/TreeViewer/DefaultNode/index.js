@@ -1,16 +1,16 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import isArray from 'lodash/isArray';
 
+import { isNotEmptyArray } from '../utils';
 import ExpandIcon from './ExpandIcon';
 
 const NodeList = styled.ul`
   list-style-type: none;
   margin: 0;
-  padding-left: ${props => (props.isRootNode ? '0' : '1.5rem')};
-  height: ${props => !props.isExpanded && '0'};
-  transition: height 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  padding-left: 1rem;
+  transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
   overflow-y: hidden;
 `;
 
@@ -26,14 +26,24 @@ const Expand = styled.span`
   }
 `;
 
-const NodeContent = styled.div`
-  font-size: ${props => (props.isRootNode ? '20px' : '16px')};
-  font-size: ${props => (props.isRootNode ? '600' : '400')};
-  color: ${props => props.isActiveNode && 'blue'};
-  cursor: pointer;
+const Extra = styled.span`
+  width: 18px;
+  display: inline-block;
 `;
 
-const DefaultNode = ({ level, data, children, onToggle, onChange, isActiveNode }) => {
+const NodeContent = styled.div`
+  font-size: ${props => (props.isRootNode ? '20px' : '18px')};
+  font-size: ${props => (props.isRootNode ? '600' : '400')};
+  background-color: ${props => props.isSelected && 'rgba(25, 118, 210, 0.2) !important'};
+  cursor: pointer;
+  padding: 0 0.5rem;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+`;
+
+const DefaultNode = ({ level, data, children, onClick, isSelected }) => {
   if (!data) {
     return null;
   }
@@ -43,16 +53,20 @@ const DefaultNode = ({ level, data, children, onToggle, onChange, isActiveNode }
 
   return (
     <>
-      <NodeContent isActiveNode={isActiveNode} isRootNode={isRootNode}>
-        <Expand onClick={onToggle} isRootNode={isRootNode} isExpanded={isExpanded}>
-          <ExpandIcon />
-        </Expand>
+      <NodeContent isSelected={isSelected} isRootNode={isRootNode} onClick={onClick}>
+        {isNotEmptyArray(children) ? (
+          <Expand isRootNode={isRootNode} isExpanded={isExpanded}>
+            <ExpandIcon />
+          </Expand>
+        ) : (
+          <Extra />
+        )}
 
-        <span onClick={onChange}>{data.name}</span>
+        <span>{data.name}</span>
       </NodeContent>
 
-      {isArray(children) && (
-        <NodeList isExpanded={isExpanded} isRootNode={isRootNode}>
+      {isNotEmptyArray(children) && (
+        <NodeList isExpanded={isExpanded}>
           {children.map(child => (
             <WrapperChild key={child.key}>{child}</WrapperChild>
           ))}
@@ -69,18 +83,16 @@ DefaultNode.propTypes = {
     isExpanded: PropTypes.bool,
   }),
   children: PropTypes.arrayOf(PropTypes.node),
-  onToggle: PropTypes.func,
-  onChange: PropTypes.func,
-  isActiveNode: PropTypes.bool,
+  onClick: PropTypes.func,
+  isSelected: PropTypes.bool,
 };
 
 DefaultNode.defaultProps = {
   level: 0,
   data: null,
   children: null,
-  onToggle: null,
-  onChange: null,
-  isActiveNode: false,
+  onClick: null,
+  isSelected: false,
 };
 
 export default DefaultNode;

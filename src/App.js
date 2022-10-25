@@ -64,6 +64,23 @@ const exampleData = {
           name: 'Node 3-1',
           id: uuid(),
           type: 'store',
+          children: [
+            {
+              name: 'Node 3-1-1',
+              id: uuid(),
+              type: 'merchant-sub',
+            },
+            {
+              name: 'Node 3-1-2',
+              id: uuid(),
+              type: 'merchant-sub',
+            },
+          ],
+        },
+        {
+          name: 'Node 3-2',
+          id: uuid(),
+          type: 'store',
         },
       ],
     },
