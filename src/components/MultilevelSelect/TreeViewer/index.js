@@ -5,6 +5,8 @@ import cloneDeep from 'lodash/cloneDeep';
 
 import { formatTree, isNotEmptyArray } from './utils';
 import DefaultNode from './DefaultNode';
+import WrapperNode from './WrapperNode';
+import WrapperChildren from './WrapperChildren';
 
 const TreeViewer = ({ treeData, CustomNode, onChange }) => {
   const [tree, setTree] = useState({});
@@ -35,31 +37,39 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
         }
       }
     },
-    [onChange, selectedNode.id, tree]
+    [onChange, selectedNode, tree]
   );
 
   const renderTree = useCallback(
     (node, level = 0) => {
       const Node = CustomNode ?? DefaultNode;
+      const isRootNode = level === 0;
+      const isExpanded = !!node?.isExpanded;
 
       return (
-        // Node includes node content and a list of its children (if have)
-        <Node
-          level={level}
-          data={node}
-          key={node.id}
+        // WrapperNode includes node content and a list of its children (if have)
+        <WrapperNode
+          isRootNode={isRootNode}
+          isExpanded={isExpanded}
+          isSelected={selectedNode.id === node.id}
           onClick={() => {
             handleClick(node);
           }}
-          isSelected={selectedNode.id === node.id}
+          nodeContent={<Node data={node} isRootNode={isRootNode} />}
         >
-          {isNotEmptyArray(node?.children)
-            ? node.children.map(childNode => renderTree(childNode, level + 1))
-            : null}
-        </Node>
+          {isNotEmptyArray(node?.children) ? (
+            <WrapperChildren isExpanded={isExpanded}>
+              {node.children.map(child => (
+                <WrapperChildren.Item key={child.id}>
+                  {renderTree(child, level + 1)}
+                </WrapperChildren.Item>
+              ))}
+            </WrapperChildren>
+          ) : null}
+        </WrapperNode>
       );
     },
-    [CustomNode, handleClick, selectedNode.id]
+    [CustomNode, handleClick, selectedNode]
   );
 
   useEffect(() => {
