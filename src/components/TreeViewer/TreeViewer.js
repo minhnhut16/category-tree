@@ -3,22 +3,24 @@ import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import cloneDeep from 'lodash/cloneDeep';
 
-import { formatTree, isNotEmptyArray } from './utils';
+import { ADDITIONAL_FIELDS, isNotEmptyArray } from './utils';
 import DefaultNode from './DefaultNode';
 import WrapperNode from './WrapperNode';
 import WrapperChildren from './WrapperChildren';
 
-const TreeViewer = ({ treeData, CustomNode, onChange }) => {
+const TreeViewer = ({ treeData, CustomNode, onChange, onToggle }) => {
   const [tree, setTree] = useState({});
   const [selectedNode, setSelectedNode] = useState({});
 
-  const handleClick = useCallback(
+  const handleChange = useCallback(
     curNode => {
+      let toggledNode;
       // Toggle expand node
       const clonedTree = cloneDeep(tree);
       function traversal(node) {
         if (node.id === curNode.id) {
-          node.isExpanded = !node.isExpanded;
+          node[ADDITIONAL_FIELDS.IS_EXPANDED] = !node[ADDITIONAL_FIELDS.IS_EXPANDED];
+          toggledNode = node;
           return;
         }
 
@@ -28,23 +30,26 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
       }
       traversal(clonedTree);
       setTree(clonedTree);
+      if (onToggle) {
+        onToggle(toggledNode, clonedTree);
+      }
 
       // Change selected node
       if (curNode.id !== selectedNode.id) {
-        setSelectedNode(curNode);
+        setSelectedNode(toggledNode);
         if (onChange) {
-          onChange(curNode);
+          onChange(toggledNode, clonedTree);
         }
       }
     },
-    [onChange, selectedNode, tree]
+    [onChange, onToggle, selectedNode.id, tree]
   );
 
   const renderTree = useCallback(
     (node, level = 0) => {
       const Node = CustomNode ?? DefaultNode;
       const isRootNode = level === 0;
-      const isExpanded = !!node?.isExpanded;
+      const isExpanded = !!node?.[ADDITIONAL_FIELDS.IS_EXPANDED];
 
       return (
         // WrapperNode includes node content and a list of its children (if have)
@@ -53,7 +58,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
           isExpanded={isExpanded}
           isSelected={selectedNode.id === node.id}
           onClick={() => {
-            handleClick(node);
+            handleChange(node);
           }}
           nodeContent={<Node data={node} isRootNode={isRootNode} />}
         >
@@ -69,12 +74,12 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
         </WrapperNode>
       );
     },
-    [CustomNode, handleClick, selectedNode]
+    [CustomNode, handleChange, selectedNode]
   );
 
   useEffect(() => {
     if (treeData) {
-      setTree(formatTree(treeData));
+      setTree(treeData);
     }
   }, [treeData]);
 
@@ -85,12 +90,14 @@ TreeViewer.propTypes = {
   treeData: PropTypes.shape({}),
   CustomNode: PropTypes.node,
   onChange: PropTypes.func,
+  onToggle: PropTypes.func,
 };
 
 TreeViewer.defaultProps = {
   treeData: null,
   CustomNode: null,
   onChange: null,
+  onToggle: null,
 };
 
 export default TreeViewer;

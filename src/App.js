@@ -1,9 +1,9 @@
-import { Button, Modal } from 'antd';
+import { Button } from 'antd';
 import 'antd/dist/antd.css';
 import MultilevelSelect from 'components/MultilevelSelect';
 import Spacing from 'components/Spacing';
 import { ConfigProvider } from 'contexts/config';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 const exampleData = {
@@ -95,6 +95,10 @@ const exampleData = {
 function App() {
   const [openSelect, setOpenSelect] = useState(false);
 
+  const handleFinish = useCallback(tree => {
+    console.log(tree);
+  }, []);
+
   return (
     <Spacing px="1rem" py="1rem">
       <div className="App">
@@ -102,17 +106,14 @@ function App() {
           Open Select
         </Button>
 
-        <Modal
-          open={openSelect}
-          onCancel={() => setOpenSelect(false)}
-          footer={null}
-          width="100%"
-          title="Multilevel select"
-        >
-          <ConfigProvider>
-            <MultilevelSelect treeData={exampleData} />
-          </ConfigProvider>
-        </Modal>
+        <ConfigProvider>
+          <MultilevelSelect
+            open={openSelect}
+            onCancel={() => setOpenSelect(false)}
+            defaultTreeData={exampleData}
+            onFinish={handleFinish}
+          />
+        </ConfigProvider>
       </div>
     </Spacing>
   );
