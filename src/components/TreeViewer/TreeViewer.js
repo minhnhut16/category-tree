@@ -12,7 +12,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange, onToggle }) => {
   const [tree, setTree] = useState({});
   const [selectedNode, setSelectedNode] = useState({});
 
-  const handleChange = useCallback(
+  const handleClick = useCallback(
     curNode => {
       let toggledNode;
       // Toggle expand node
@@ -58,7 +58,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange, onToggle }) => {
           isExpanded={isExpanded}
           isSelected={selectedNode.id === node.id}
           onClick={() => {
-            handleChange(node);
+            handleClick(node);
           }}
           nodeContent={<Node data={node} isRootNode={isRootNode} />}
         >
@@ -74,7 +74,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange, onToggle }) => {
         </WrapperNode>
       );
     },
-    [CustomNode, handleChange, selectedNode]
+    [CustomNode, handleClick, selectedNode.id]
   );
 
   useEffect(() => {
