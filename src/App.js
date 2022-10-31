@@ -18,7 +18,7 @@ const exampleData = {
       children: [
         {
           name: 'Node 1-1',
-          id: uuid(),
+          id: '200', // mocked fixed id for test
           type: 'store',
         },
         {

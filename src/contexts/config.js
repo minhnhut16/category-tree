@@ -11,7 +11,7 @@ const TYPES = {
 
 const config = {
   levels: {
-    ROOT: {
+    [TYPES.ROOT]: {
       label: 'ROOT',
       type: TYPES.ROOT,
       nextLevel: TYPES.MERCHANT,
@@ -35,5 +35,9 @@ export const ConfigProvider = ({ children }) => {
 
 export const useConfig = () => {
   const value = useContext(ConfigContext);
+
+  if (typeof value === 'undefined') {
+    throw new Error('useConfig must be used within a ConfigProvider');
+  }
   return value;
 };
