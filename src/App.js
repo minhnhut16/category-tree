@@ -1,103 +1,34 @@
-import { Button } from 'antd';
+import { Button, Modal, Spin } from 'antd';
 import 'antd/dist/antd.css';
 import MultilevelSelect from 'components/MultilevelSelect';
 import Spacing from 'components/Spacing';
+import TreeViewer from 'components/TreeViewer';
 import { ConfigProvider } from 'contexts/config';
-import { useCallback, useState } from 'react';
-import { v4 as uuid } from 'uuid';
-
-const exampleData = {
-  name: 'Root Node',
-  type: 'root',
-  id: uuid(),
-  children: [
-    {
-      name: 'Node 1',
-      id: uuid(),
-      type: 'merchant',
-      children: [
-        {
-          name: 'Node 1-1',
-          id: '200', // mocked fixed id for test
-          type: 'store',
-        },
-        {
-          name: 'Node 1-2',
-          id: uuid(),
-          type: 'store',
-        },
-        {
-          name: 'Node 1-3',
-          id: uuid(),
-          type: 'store',
-        },
-      ],
-    },
-    {
-      name: 'Node 2',
-      id: uuid(),
-      type: 'merchant',
-      children: [
-        {
-          name: 'Node 2-1',
-          id: uuid(),
-          type: 'store',
-        },
-        {
-          name: 'Node 2-2',
-          id: uuid(),
-          type: 'store',
-        },
-        {
-          name: 'Node 2-3',
-          id: uuid(),
-          type: 'store',
-        },
-      ],
-    },
-    {
-      name: 'Node 3',
-      id: uuid(),
-      type: 'merchant',
-      children: [
-        {
-          name: 'Node 3-1',
-          id: uuid(),
-          type: 'store',
-          children: [
-            {
-              name: 'Node 3-1-1',
-              id: uuid(),
-              type: 'merchant-sub',
-            },
-            {
-              name: 'Node 3-1-2',
-              id: uuid(),
-              type: 'merchant-sub',
-            },
-          ],
-        },
-        {
-          name: 'Node 3-2',
-          id: uuid(),
-          type: 'store',
-        },
-      ],
-    },
-    {
-      name: 'Node 4',
-      id: uuid(),
-      type: 'merchant',
-    },
-  ],
-};
+import { useCallback, useEffect, useState } from 'react';
+import useAPITree from 'useAPITree';
 
 function App() {
   const [openSelect, setOpenSelect] = useState(false);
+  const [treeData, setTreeData] = useState({});
+  // just mock
+  const { treeData: treeDataAPI, isLoading: fetchLoading } = useAPITree();
 
-  const handleFinish = useCallback(tree => {
-    console.log(tree);
+  const handleFinish = useCallback(async tree => {
+    // fake api update tree
+    await new Promise(r => setTimeout(r, 500));
+    setTreeData(tree);
+    setOpenSelect(false);
   }, []);
+
+  useEffect(() => {
+    if (treeDataAPI) {
+      setTreeData(treeDataAPI);
+    }
+  }, [treeDataAPI]);
+
+  if (fetchLoading) {
+    return <Spin />;
+  }
 
   return (
     <Spacing px="1rem" py="1rem">
@@ -106,14 +37,19 @@ function App() {
           Open Select
         </Button>
 
-        <ConfigProvider>
-          <MultilevelSelect
-            open={openSelect}
-            onCancel={() => setOpenSelect(false)}
-            defaultTreeData={exampleData}
-            onFinish={handleFinish}
-          />
-        </ConfigProvider>
+        <TreeViewer treeData={treeData} />
+
+        <Modal
+          open={openSelect}
+          onCancel={() => setOpenSelect(false)}
+          footer={null}
+          width="100%"
+          closable={false}
+        >
+          <ConfigProvider>
+            <MultilevelSelect initTreeData={treeData} onFinish={handleFinish} />
+          </ConfigProvider>
+        </Modal>
       </div>
     </Spacing>
   );
