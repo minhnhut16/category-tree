@@ -7,27 +7,20 @@ import WrapperNode from './WrapperNode';
 import WrapperChildren from './WrapperChildren';
 import useExpand from './hooks/useExpand';
 
-const TreeViewer = ({ treeData, CustomNode, onChange }) => {
-  const [tree, setTree] = useState({});
-  const { expandedNodes, togleExpandedNode } = useExpand();
+const TreeViewer = ({ treeIns, CustomNode, onChange }) => {
+  const { expandedNodes, toggleExpandedNode } = useExpand();
   const [selectedNode, setSelectedNode] = useState({});
+  const forceRender = useForceRender();
+
+  const { treeData, traversalByNode, renderTree } = treeIns || {};
+  const Node = CustomNode ?? DefaultNode;
 
   const handleClick = useCallback(
     curNode => {
-      // Toggle expand node
-      function traversal(node) {
-        if (node.id === curNode.id) {
-          togleExpandedNode(node.id);
-          return;
-        }
+      if (traversalByNode) {
+        traversalByNode(curNode, () => {
+          togleExpandedNode(curNode.id);
 
-        if (node.children?.length) {
-          node.children.forEach(childNode => traversal(childNode));
-        }
-      }
-      traversal(tree);
-
-      // Change selected node
       if (curNode.id !== selectedNode.id) {
         setSelectedNode(curNode);
         if (onChange) {
@@ -35,7 +28,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
         }
       }
     },
-    [onChange, selectedNode.id, togleExpandedNode, tree]
+    [onChange, selectedNode.id, toggleExpandedNode]
   );
 
   const renderTree = useCallback(
@@ -44,30 +37,29 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
       const isRootNode = level === 0;
       const isExpanded = expandedNodes.includes(node.id);
 
-      return (
-        // WrapperNode includes node content and a list of its children (if have)
-        <WrapperNode
-          isRootNode={isRootNode}
-          isExpanded={isExpanded}
-          isSelected={selectedNode.id === node.id}
-          onClick={() => {
-            handleClick(node);
-          }}
-          nodeContent={<Node data={node} isRootNode={isRootNode} />}
-        >
-          {node.children?.length ? (
-            <WrapperChildren isExpanded={isExpanded}>
-              {node.children.map(child => (
-                <WrapperChildren.Item key={child.id}>
-                  {renderTree(child, level + 1)}
-                </WrapperChildren.Item>
-              ))}
-            </WrapperChildren>
-          ) : null}
-        </WrapperNode>
-      );
-    },
-    [CustomNode, expandedNodes, handleClick, selectedNode.id]
+            return (
+              <WrapperNode
+                isRootNode={isRootNode}
+                isExpanded={isExpanded}
+                isSelected={selectedNode.id === node.id}
+                onClick={() => {
+                  handleClick(node);
+                }}
+                nodeContent={<Node data={node} isRootNode={isRootNode} />}
+                key={node?.id}
+              >
+                {children ? (
+                  <WrapperChildren isExpanded={isExpanded}>
+                    {children.map(childNode => (
+                      <WrapperChildren.Item key={childNode?.key}>{childNode}</WrapperChildren.Item>
+                    ))}
+                  </WrapperChildren>
+                ) : null}
+              </WrapperNode>
+            );
+          },
+        })}
+    </div>
   );
 
   useEffect(() => {
