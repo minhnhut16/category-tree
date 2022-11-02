@@ -116,7 +116,7 @@ const mockOptions = [
 // TODO: mock async api, remove after
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function SelectBoard({ node, apiFn }) {
+function SelectBoard({ node, apiFn, onSave }) {
   const [form] = Form.useForm();
   const { config } = useConfig();
   const [{ isLoading, options, selectedOptions }, dispatch] = useReducer(reducer, initialState);
@@ -150,7 +150,7 @@ function SelectBoard({ node, apiFn }) {
     [apiFn]
   );
 
-  const onSave = () => {
+  const handleSave = () => {
     const produce = cloneDeep(node);
     const optionType = config?.levels?.[node.type]?.nextLevel;
     produce.children = selectedOptions.map(opt => ({
@@ -158,7 +158,9 @@ function SelectBoard({ node, apiFn }) {
       type: optionType,
     }));
 
-    console.log(produce);
+    if (onSave) {
+      onSave(produce);
+    }
   };
 
   const debounceSearch = useMemo(
@@ -222,7 +224,7 @@ function SelectBoard({ node, apiFn }) {
       <Actions>
         <Heading>Customize {nextLevel}</Heading>
 
-        <Button type="primary" onClick={onSave}>
+        <Button type="primary" onClick={handleSave}>
           Save
         </Button>
       </Actions>
@@ -276,10 +278,12 @@ SelectBoard.propTypes = {
     children: PropTypes.arrayOf(PropTypes.shape({})),
   }),
   apiFn: PropTypes.func.isRequired,
+  onSave: PropTypes.func,
 };
 
 SelectBoard.defaultProps = {
   node: null,
+  onSave: null,
 };
 
 export default SelectBoard;

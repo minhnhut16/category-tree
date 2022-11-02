@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import ExpandIcon from './ExpandIcon';
 
-const Expand = styled.span`
+const Expand = styled.div`
   svg {
     width: ${props => (props.isRootNode ? '13px' : '10px')};
     height: ${props => (props.isRootNode ? '13px' : '10px')};
@@ -14,15 +14,17 @@ const Expand = styled.span`
   }
 `;
 
-const Extra = styled.span`
+const Extra = styled.div`
   width: 18px;
-  display: inline-block;
+  flex-shrink: 0;
 `;
 
 const WrapperContent = styled.div`
   background-color: ${props => props.isSelected && 'rgba(25, 118, 210, 0.2) !important'};
   cursor: pointer;
   padding: 0 0.5rem;
+  display: flex;
+  align-items: center;
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.04);

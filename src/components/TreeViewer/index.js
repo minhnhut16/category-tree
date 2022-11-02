@@ -1,33 +1,31 @@
 /* eslint-disable no-param-reassign */
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import cloneDeep from 'lodash/cloneDeep';
 
-import { formatTree, isNotEmptyArray } from './utils';
 import DefaultNode from './DefaultNode';
 import WrapperNode from './WrapperNode';
 import WrapperChildren from './WrapperChildren';
+import useExpand from './hooks/useExpand';
 
 const TreeViewer = ({ treeData, CustomNode, onChange }) => {
   const [tree, setTree] = useState({});
+  const { expandedNodes, togleExpandedNode } = useExpand();
   const [selectedNode, setSelectedNode] = useState({});
 
   const handleClick = useCallback(
     curNode => {
       // Toggle expand node
-      const clonedTree = cloneDeep(tree);
       function traversal(node) {
         if (node.id === curNode.id) {
-          node.isExpanded = !node.isExpanded;
+          togleExpandedNode(node.id);
           return;
         }
 
-        if (isNotEmptyArray(node.children)) {
+        if (node.children?.length) {
           node.children.forEach(childNode => traversal(childNode));
         }
       }
-      traversal(clonedTree);
-      setTree(clonedTree);
+      traversal(tree);
 
       // Change selected node
       if (curNode.id !== selectedNode.id) {
@@ -37,14 +35,14 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
         }
       }
     },
-    [onChange, selectedNode, tree]
+    [onChange, selectedNode.id, togleExpandedNode, tree]
   );
 
   const renderTree = useCallback(
     (node, level = 0) => {
       const Node = CustomNode ?? DefaultNode;
       const isRootNode = level === 0;
-      const isExpanded = !!node?.isExpanded;
+      const isExpanded = expandedNodes.includes(node.id);
 
       return (
         // WrapperNode includes node content and a list of its children (if have)
@@ -57,7 +55,7 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
           }}
           nodeContent={<Node data={node} isRootNode={isRootNode} />}
         >
-          {isNotEmptyArray(node?.children) ? (
+          {node.children?.length ? (
             <WrapperChildren isExpanded={isExpanded}>
               {node.children.map(child => (
                 <WrapperChildren.Item key={child.id}>
@@ -69,12 +67,12 @@ const TreeViewer = ({ treeData, CustomNode, onChange }) => {
         </WrapperNode>
       );
     },
-    [CustomNode, handleClick, selectedNode]
+    [CustomNode, expandedNodes, handleClick, selectedNode.id]
   );
 
   useEffect(() => {
     if (treeData) {
-      setTree(formatTree(treeData));
+      setTree(treeData);
     }
   }, [treeData]);
 

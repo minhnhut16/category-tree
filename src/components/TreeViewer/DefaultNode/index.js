@@ -2,8 +2,8 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 const Content = styled.span`
-  font-size: ${props => (props.isRootNode ? '20px' : '18px')};
-  font-size: ${props => (props.isRootNode ? '600' : '400')};
+  font-size: ${props => (props.isRootNode ? '18px' : '16px')};
+  font-weight: ${props => (props.isRootNode ? '600' : '400')};
 `;
 
 const DefaultNode = ({ data, isRootNode }) => {
