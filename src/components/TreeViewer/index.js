@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
@@ -6,21 +5,19 @@ import DefaultNode from './DefaultNode';
 import WrapperNode from './WrapperNode';
 import WrapperChildren from './WrapperChildren';
 import useExpand from './hooks/useExpand';
+import useForceRender from './hooks/useForceRender';
 
 const TreeViewer = ({ treeIns, CustomNode, onChange }) => {
   const { expandedNodes, toggleExpandedNode } = useExpand();
   const [selectedNode, setSelectedNode] = useState({});
   const forceRender = useForceRender();
 
-  const { treeData, traversalByNode, renderTree } = treeIns || {};
+  const { treeData, renderTree } = treeIns || {};
   const Node = CustomNode ?? DefaultNode;
 
   const handleClick = useCallback(
     curNode => {
-      if (traversalByNode) {
-        traversalByNode(curNode, () => {
-          togleExpandedNode(curNode.id);
-
+      toggleExpandedNode(curNode.id);
       if (curNode.id !== selectedNode.id) {
         setSelectedNode(curNode);
         if (onChange) {
@@ -31,11 +28,16 @@ const TreeViewer = ({ treeIns, CustomNode, onChange }) => {
     [onChange, selectedNode.id, toggleExpandedNode]
   );
 
-  const renderTree = useCallback(
-    (node, level = 0) => {
-      const Node = CustomNode ?? DefaultNode;
-      const isRootNode = level === 0;
-      const isExpanded = expandedNodes.includes(node.id);
+  useEffect(() => {
+    forceRender();
+  }, [forceRender, treeData]);
+
+  return (
+    <div>
+      {renderTree &&
+        renderTree({
+          renderNode: ({ isRootNode, node, children }) => {
+            const isExpanded = expandedNodes.includes(node.id);
 
             return (
               <WrapperNode
@@ -61,24 +63,16 @@ const TreeViewer = ({ treeIns, CustomNode, onChange }) => {
         })}
     </div>
   );
-
-  useEffect(() => {
-    if (treeData) {
-      setTree(treeData);
-    }
-  }, [treeData]);
-
-  return <div>{renderTree(tree)}</div>;
 };
 
 TreeViewer.propTypes = {
-  treeData: PropTypes.shape({}),
+  treeIns: PropTypes.shape({}),
   CustomNode: PropTypes.node,
   onChange: PropTypes.func,
 };
 
 TreeViewer.defaultProps = {
-  treeData: null,
+  treeIns: null,
   CustomNode: null,
   onChange: null,
 };

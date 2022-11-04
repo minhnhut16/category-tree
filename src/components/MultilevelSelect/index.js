@@ -1,19 +1,20 @@
 /* eslint-disable no-param-reassign */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { Button, Empty } from 'antd';
-import { cloneDeep } from 'lodash';
+import { Button, Empty, Modal } from 'antd';
 
 import { useConfig } from 'contexts/config';
-import TreeViewer from 'components/TreeViewer';
 
+import TreeViewer from 'components/TreeViewer';
+import { Tree } from 'entities/Tree';
 import SelectBoard from './SelectBoard';
 
 const Header = styled.div`
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 0 0 1rem;
+  margin: 1rem 0;
 `;
 
 const Wrapper = styled.div`
@@ -39,16 +40,10 @@ const StyledEmpty = styled(Empty)`
 `;
 const fakeApi = () => {};
 
-const MultilevelSelect = ({ initTreeData, onFinish }) => {
-  const [treeData, setTreeData] = useState({});
+const MultilevelSelect = ({ treeData, onFinish }) => {
+  const treeIns = useRef(new Tree())?.current;
   const [activeNode, setActiveNode] = useState();
   const { config } = useConfig();
-
-  const handleFinish = useCallback(() => {
-    if (onFinish) {
-      onFinish(treeData);
-    }
-  }, [onFinish, treeData]);
 
   const handleChange = useCallback(
     node => {
@@ -63,31 +58,23 @@ const MultilevelSelect = ({ initTreeData, onFinish }) => {
 
   const handleSave = useCallback(
     curNode => {
-      const clonedTree = cloneDeep(treeData);
-
-      function traversal(node) {
-        if (node.id === curNode.id) {
-          Object.assign(node, curNode);
-          return;
-        }
-
-        if (node?.children?.length) {
-          node.children.forEach(childNode => traversal(childNode));
-        }
-      }
-
-      traversal(clonedTree);
-      setTreeData(clonedTree);
+      treeIns.updateNode(curNode);
       setActiveNode(curNode);
     },
-    [treeData]
+    [treeIns]
   );
 
-  useEffect(() => {
-    if (initTreeData) {
-      setTreeData(initTreeData);
+  const handleFinish = useCallback(() => {
+    if (onFinish) {
+      onFinish(treeIns.treeData);
     }
-  }, [initTreeData]);
+  }, [onFinish, treeIns]);
+
+  useEffect(() => {
+    if (treeData) {
+      treeIns.setTree(treeData);
+    }
+  }, [treeData, treeIns]);
 
   return (
     <div>
@@ -100,7 +87,7 @@ const MultilevelSelect = ({ initTreeData, onFinish }) => {
 
       <Wrapper>
         <TreeWrapper>
-          <TreeViewer treeData={treeData} onChange={handleChange} />
+          <TreeViewer treeIns={treeIns} onChange={handleChange} />
         </TreeWrapper>
 
         <BoardWrapper>
@@ -116,12 +103,12 @@ const MultilevelSelect = ({ initTreeData, onFinish }) => {
 };
 
 MultilevelSelect.propTypes = {
-  initTreeData: PropTypes.shape({}),
+  treeData: PropTypes.shape({}),
   onFinish: PropTypes.func,
 };
 
 MultilevelSelect.defaultProps = {
-  initTreeData: null,
+  treeData: null,
   onFinish: null,
 };
 

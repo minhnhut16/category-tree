@@ -1,30 +1,36 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Modal, Spin } from 'antd';
 import 'antd/dist/antd.css';
+
 import MultilevelSelect from 'components/MultilevelSelect';
 import Spacing from 'components/Spacing';
 import TreeViewer from 'components/TreeViewer';
 import { ConfigProvider } from 'contexts/config';
-import { useCallback, useEffect, useState } from 'react';
+import { Tree } from 'entities/Tree';
 import useAPITree from 'useAPITree';
 
 function App() {
   const [openSelect, setOpenSelect] = useState(false);
-  const [treeData, setTreeData] = useState({});
+  const treeIns = useRef(new Tree())?.current;
+
   // just mock
   const { treeData: treeDataAPI, isLoading: fetchLoading } = useAPITree();
 
-  const handleFinish = useCallback(async tree => {
-    // fake api update tree
-    await new Promise(r => setTimeout(r, 500));
-    setTreeData(tree);
-    setOpenSelect(false);
-  }, []);
+  const handleFinish = useCallback(
+    async tree => {
+      // fake api update tree
+      await new Promise(r => setTimeout(r, 500));
+      treeIns.setTree(tree);
+      setOpenSelect(false);
+    },
+    [treeIns]
+  );
 
   useEffect(() => {
     if (treeDataAPI) {
-      setTreeData(treeDataAPI);
+      treeIns.setTree(treeDataAPI);
     }
-  }, [treeDataAPI]);
+  }, [treeDataAPI, treeIns]);
 
   if (fetchLoading) {
     return <Spin />;
@@ -37,7 +43,7 @@ function App() {
           Open Select
         </Button>
 
-        <TreeViewer treeData={treeData} />
+        <TreeViewer treeIns={treeIns} />
 
         <Modal
           open={openSelect}
@@ -47,7 +53,7 @@ function App() {
           closable={false}
         >
           <ConfigProvider>
-            <MultilevelSelect initTreeData={treeData} onFinish={handleFinish} />
+            <MultilevelSelect treeData={treeDataAPI} onFinish={handleFinish} />
           </ConfigProvider>
         </Modal>
       </div>

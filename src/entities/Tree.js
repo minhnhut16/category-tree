@@ -3,8 +3,12 @@ import isEmpty from 'lodash/isEmpty';
 
 export class Tree {
   constructor(treeData) {
-    this.treeData = treeData;
+    this.treeData = cloneDeep(treeData);
   }
+
+  setTree = treeData => {
+    this.treeData = cloneDeep(treeData);
+  };
 
   updateNode = curNode => {
     const clonedTree = cloneDeep(this.treeData);
@@ -35,6 +39,10 @@ export class Tree {
         return renderNode({ node, children: transformedChildren, isRootNode: level === 0 });
       }
 
+      return null;
+    }
+
+    if (!ctx.treeData) {
       return null;
     }
 
